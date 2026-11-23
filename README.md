@@ -9,7 +9,7 @@
   [![Android Min SDK](https://img.shields.io/badge/Min%20SDK-26%20%28Android%208.0%29-3DDC84.svg?style=for-the-badge&logo=android)](https://developer.android.com/)
   [![Android Target SDK](https://img.shields.io/badge/Target%20SDK-36-3DDC84.svg?style=for-the-badge&logo=android)](https://developer.android.com/)
   [![Architecture](https://img.shields.io/badge/Architecture-Clean%20%2B%20MVVM-FF6F00.svg?style=for-the-badge)](https://developer.android.com/topic/architecture)
-  [![Download APK](https://img.shields.io/badge/Download-APK%20(v1.0)-2EA44F.svg?style=for-the-badge&logo=android&logoColor=white)](https://github.com/omsoni21/Helpnearby/releases/latest/download/app-debug.apk)
+  [![Download APK](https://img.shields.io/badge/Download-APK%20(v1.0)-2EA44F.svg?style=for-the-badge&logo=android&logoColor=white)](https://github.com/omsoni21/Helpnearby/raw/main/apk/HelpNearby-v1.0.apk)
 
 </div>
 
@@ -17,12 +17,11 @@
 
 ## 📥 Direct APK Download
 
-Download the latest pre-built Android APK directly to your device:
+Download the real working Android APK directly onto your phone:
 
-[![Download APK](https://img.shields.io/badge/Download-HelpNearby%20v1.0%20APK-2EA44F?style=for-the-badge&logo=android&logoColor=white)](https://github.com/omsoni21/Helpnearby/releases/latest/download/app-debug.apk)
+[![Download APK](https://img.shields.io/badge/Download-HelpNearby%20v1.0%20APK-2EA44F?style=for-the-badge&logo=android&logoColor=white)](https://github.com/omsoni21/Helpnearby/raw/main/apk/HelpNearby-v1.0.apk)
 
-- 🔗 **Direct Download Link:** [Download app-debug.apk](https://github.com/omsoni21/Helpnearby/releases/latest/download/app-debug.apk)
-- 📦 **GitHub Releases:** [View All Releases](https://github.com/omsoni21/Helpnearby/releases)
+- 📲 **Direct Instant Download:** [Click Here to Download HelpNearby-v1.0.apk](https://github.com/omsoni21/Helpnearby/raw/main/apk/HelpNearby-v1.0.apk)
 
 ---
 
