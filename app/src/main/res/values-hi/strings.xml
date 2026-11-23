@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">HelpNearby</string>
+    <string name="app_tagline">साथ मिलकर, हम मदद करते हैं।</string>
+    <string name="nav_home">होम</string>
+    <string name="nav_explore">खोजें</string>
+    <string name="nav_create">बनाएं</string>
+    <string name="nav_messages">संदेश</string>
+    <string name="nav_profile">प्रोफ़ाइल</string>
+    <string name="emergency_number_india">112</string>
+    <string name="emergency_disclaimer">HelpNearby एक सामुदायिक मंच है, न कि आपातकालीन सेवा। किसी भी चिकित्सा, आग या पुलिस आपात स्थिति में तुरंत 112 पर कॉल करें।</string>
+    <string name="donor_disclaimer">रक्तदाता की उपलब्धता और चिकित्सकीय उपयुक्तता की पुष्टि सीधे लाइसेंस प्राप्त अस्पताल या ब्लड बैंक से की जानी चाहिए।</string>
+</resources>

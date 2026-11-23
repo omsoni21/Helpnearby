@@ -1,0 +1,6 @@
+{
+  "name": "HelpNearby",
+  "description": "Together, We Help. An offline-first community assistance platform connecting neighbors for daily help, volunteering, blood donation, lost & found, and local safety.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">HelpNearby</string>
+    <string name="app_tagline">Together, We Help.</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_explore">Explore</string>
+    <string name="nav_create">Create</string>
+    <string name="nav_messages">Messages</string>
+    <string name="nav_profile">Profile</string>
+    <string name="emergency_number_india">112</string>
+    <string name="emergency_disclaimer">HelpNearby is a community platform and NOT an emergency response service. In life-threatening, medical, fire, or crime emergencies, immediately call 112 or contact official authorities.</string>
+    <string name="donor_disclaimer">Blood donor availability and medical suitability must be confirmed directly with a licensed hospital or blood bank. HelpNearby does not make medical eligibility decisions.</string>
+</resources>
