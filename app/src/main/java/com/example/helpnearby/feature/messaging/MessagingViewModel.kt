@@ -3,12 +3,14 @@ package com.example.helpnearby.feature.messaging
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.helpnearby.core.common.AppResult
+import com.example.helpnearby.core.sync.SyncManager
 import com.example.helpnearby.domain.model.*
 import com.example.helpnearby.domain.repository.AuthRepository
 import com.example.helpnearby.domain.repository.MessagingRepository
 import com.example.helpnearby.domain.repository.SafetyModerationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -23,8 +25,28 @@ data class ConversationsUiState(
 @HiltViewModel
 class ConversationsViewModel @Inject constructor(
     private val messagingRepository: MessagingRepository,
+    private val syncManager: SyncManager,
     authRepository: AuthRepository
 ) : ViewModel() {
+
+    init {
+        viewModelScope.launch {
+            authRepository.currentUser.collect { user ->
+                if (user != null) {
+                    syncManager.refreshFromCloud(null, user.id)
+                }
+            }
+        }
+        viewModelScope.launch {
+            while (true) {
+                delay(5_000L)
+                val uid = authRepository.currentUser.firstOrNull()?.id
+                if (uid != null) {
+                    syncManager.refreshFromCloud(null, uid)
+                }
+            }
+        }
+    }
 
     val uiState: StateFlow<ConversationsUiState> = authRepository.currentUser
         .flatMapLatest { user ->
@@ -58,11 +80,24 @@ data class ChatUiState(
 class ChatViewModel @Inject constructor(
     private val messagingRepository: MessagingRepository,
     private val safetyRepository: SafetyModerationRepository,
-    authRepository: AuthRepository
+    private val syncManager: SyncManager,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val conversationIdFlow = MutableStateFlow("")
     private val feedbackFlow = MutableStateFlow<Pair<String?, String?>>(null to null)
+
+    init {
+        viewModelScope.launch {
+            while (true) {
+                delay(5_000L)
+                val uid = authRepository.currentUser.firstOrNull()?.id
+                if (uid != null) {
+                    syncManager.refreshFromCloud(null, uid)
+                }
+            }
+        }
+    }
 
     val uiState: StateFlow<ChatUiState> = combine(
         conversationIdFlow.filter { it.isNotBlank() },

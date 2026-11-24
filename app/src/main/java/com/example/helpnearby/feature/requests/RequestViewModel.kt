@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.helpnearby.core.common.AppResult
 import com.example.helpnearby.core.location.DetectedLocation
 import com.example.helpnearby.core.location.LocationHelper
+import com.example.helpnearby.core.sync.SyncManager
 import com.example.helpnearby.data.local.PreferencesDataStore
 import com.example.helpnearby.domain.model.*
 import com.example.helpnearby.domain.repository.*
@@ -30,7 +31,8 @@ class RequestFormViewModel @Inject constructor(
     private val helpRequestRepository: HelpRequestRepository,
     private val authRepository: AuthRepository,
     private val locationHelper: LocationHelper,
-    private val prefsDataStore: PreferencesDataStore
+    private val prefsDataStore: PreferencesDataStore,
+    private val syncManager: SyncManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RequestFormUiState())
@@ -161,7 +163,10 @@ class RequestFormViewModel @Inject constructor(
             }
 
             when (result) {
-                is AppResult.Success -> _uiState.update { it.copy(isLoading = false, savedSuccess = true) }
+                is AppResult.Success -> {
+                    _uiState.update { it.copy(isLoading = false, savedSuccess = true) }
+                    syncManager.processPendingQueueOnce()
+                }
                 is AppResult.Failure -> _uiState.update { it.copy(isLoading = false, errorMessage = result.message) }
             }
         }
@@ -185,7 +190,8 @@ class RequestDetailViewModel @Inject constructor(
     private val volunteerRepository: VolunteerRepository,
     private val messagingRepository: MessagingRepository,
     private val safetyRepository: SafetyModerationRepository,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val syncManager: SyncManager
 ) : ViewModel() {
 
     private val requestIdFlow = MutableStateFlow("")
@@ -222,6 +228,10 @@ class RequestDetailViewModel @Inject constructor(
 
     fun load(requestId: String) {
         requestIdFlow.value = requestId
+        viewModelScope.launch {
+            val uid = authRepository.currentUser.firstOrNull()?.id
+            syncManager.refreshFromCloud(null, uid)
+        }
     }
 
     fun clearFeedback() {

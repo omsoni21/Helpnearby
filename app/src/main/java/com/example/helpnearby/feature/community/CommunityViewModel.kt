@@ -3,6 +3,7 @@ package com.example.helpnearby.feature.community
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.helpnearby.core.common.AppResult
+import com.example.helpnearby.core.sync.SyncManager
 import com.example.helpnearby.data.local.PreferencesDataStore
 import com.example.helpnearby.domain.model.*
 import com.example.helpnearby.domain.repository.AuthRepository
@@ -10,6 +11,7 @@ import com.example.helpnearby.domain.repository.CommunityRepository
 import com.example.helpnearby.domain.repository.SafetyModerationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -31,7 +33,8 @@ class CommunityViewModel @Inject constructor(
     private val communityRepository: CommunityRepository,
     private val authRepository: AuthRepository,
     private val safetyRepository: SafetyModerationRepository,
-    prefsDataStore: PreferencesDataStore
+    private val prefsDataStore: PreferencesDataStore,
+    private val syncManager: SyncManager
 ) : ViewModel() {
 
     private val queryFlow = MutableStateFlow("")
@@ -39,6 +42,22 @@ class CommunityViewModel @Inject constructor(
     private val categoryFlow = MutableStateFlow<CommunityCategory?>(null)
     private val activePostIdFlow = MutableStateFlow<String?>(null)
     private val feedbackFlow = MutableStateFlow<Pair<String?, String?>>(null to null)
+
+    init {
+        viewModelScope.launch {
+            val city = prefsDataStore.selectedCity.firstOrNull()
+            val uid = prefsDataStore.currentUserId.firstOrNull()
+            syncManager.refreshFromCloud(city, uid)
+        }
+        viewModelScope.launch {
+            while (true) {
+                delay(10_000L)
+                val city = prefsDataStore.selectedCity.firstOrNull()
+                val uid = prefsDataStore.currentUserId.firstOrNull()
+                syncManager.refreshFromCloud(city, uid)
+            }
+        }
+    }
 
     val uiState: StateFlow<CommunityUiState> = combine(
         queryFlow,

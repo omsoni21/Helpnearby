@@ -153,10 +153,8 @@ class SupabaseRemoteGateway @Inject constructor(
         val publicBearer = userBearer ?: "Bearer $apiKey"
 
         return runCatching {
-            val cityFilter = city?.takeIf { it.isNotBlank() }?.let { "eq.$it" }
-
-            // 1. Help Requests (public non-PII listings)
-            val reqResp = postgrestApi.fetchHelpRequests(apiKey, publicBearer, cityEq = cityFilter)
+            // 1. Help Requests (public non-PII listings across all cities)
+            val reqResp = postgrestApi.fetchHelpRequests(apiKey, publicBearer, cityEq = null)
             if (reqResp.isSuccessful) {
                 reqResp.body().orEmpty().forEach { remote ->
                     val local = db.helpRequestDao().getById(remote.id)
@@ -171,8 +169,8 @@ class SupabaseRemoteGateway @Inject constructor(
                 }
             }
 
-            // 2. Volunteer Profiles
-            val volResp = postgrestApi.fetchVolunteerProfiles(apiKey, publicBearer, cityEq = cityFilter)
+            // 2. Volunteer Profiles (across all cities)
+            val volResp = postgrestApi.fetchVolunteerProfiles(apiKey, publicBearer, cityEq = null)
             if (volResp.isSuccessful) {
                 volResp.body().orEmpty().forEach { dto ->
                     db.volunteerDao().upsert(dto.toEntity())

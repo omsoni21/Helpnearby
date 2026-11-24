@@ -5,13 +5,16 @@ import androidx.lifecycle.viewModelScope
 import com.example.helpnearby.core.common.DistanceUtils
 import com.example.helpnearby.core.location.LocationHelper
 import com.example.helpnearby.data.local.PreferencesDataStore
+import com.example.helpnearby.core.sync.SyncManager
 import com.example.helpnearby.domain.model.AppLanguage
 import com.example.helpnearby.domain.model.HelpCategory
 import com.example.helpnearby.domain.model.HelpRequest
+import com.example.helpnearby.domain.repository.AuthRepository
 import com.example.helpnearby.domain.repository.HelpRequestRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -38,7 +41,9 @@ data class ExploreUiState(
 @HiltViewModel
 class ExploreViewModel @Inject constructor(
     private val helpRequestRepository: HelpRequestRepository,
+    private val authRepository: AuthRepository,
     private val prefsDataStore: PreferencesDataStore,
+    private val syncManager: SyncManager,
     private val locationHelper: LocationHelper
 ) : ViewModel() {
 
@@ -48,6 +53,30 @@ class ExploreViewModel @Inject constructor(
     private val sortModeFlow = MutableStateFlow(RequestSortMode.NEWEST)
     private val overrideCoordsFlow = MutableStateFlow<Pair<Double, Double>?>(null)
     private val locationStatusFlow = MutableStateFlow(false to (null as String?))
+
+    init {
+        viewModelScope.launch {
+            val city = prefsDataStore.selectedCity.firstOrNull()
+            val uid = prefsDataStore.currentUserId.firstOrNull()
+            syncManager.refreshFromCloud(city, uid)
+        }
+        viewModelScope.launch {
+            while (true) {
+                delay(10_000L)
+                val city = prefsDataStore.selectedCity.firstOrNull()
+                val uid = prefsDataStore.currentUserId.firstOrNull()
+                syncManager.refreshFromCloud(city, uid)
+            }
+        }
+    }
+
+    fun refresh() {
+        viewModelScope.launch {
+            val city = prefsDataStore.selectedCity.firstOrNull()
+            val uid = prefsDataStore.currentUserId.firstOrNull()
+            syncManager.refreshFromCloud(city, uid)
+        }
+    }
 
     private val coordsFlow: Flow<Pair<Double, Double>?> = combine(
         overrideCoordsFlow,

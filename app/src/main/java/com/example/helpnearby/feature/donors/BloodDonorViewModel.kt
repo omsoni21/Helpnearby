@@ -3,11 +3,14 @@ package com.example.helpnearby.feature.donors
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.helpnearby.core.common.AppResult
+import com.example.helpnearby.core.sync.SyncManager
+import com.example.helpnearby.data.local.PreferencesDataStore
 import com.example.helpnearby.domain.model.*
 import com.example.helpnearby.domain.repository.AuthRepository
 import com.example.helpnearby.domain.repository.BloodDonorRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -28,13 +31,31 @@ data class BloodDonorUiState(
 @HiltViewModel
 class BloodDonorViewModel @Inject constructor(
     private val bloodDonorRepository: BloodDonorRepository,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val prefsDataStore: PreferencesDataStore,
+    private val syncManager: SyncManager
 ) : ViewModel() {
 
     private val bloodGroupFlow = MutableStateFlow<BloodGroup?>(null)
     private val cityFlow = MutableStateFlow("")
     private val onlyAvailableFlow = MutableStateFlow(true)
     private val feedbackFlow = MutableStateFlow<Pair<String?, String?>>(null to null)
+
+    init {
+        viewModelScope.launch {
+            val city = prefsDataStore.selectedCity.firstOrNull()
+            val uid = prefsDataStore.currentUserId.firstOrNull()
+            syncManager.refreshFromCloud(city, uid)
+        }
+        viewModelScope.launch {
+            while (true) {
+                delay(10_000L)
+                val city = prefsDataStore.selectedCity.firstOrNull()
+                val uid = prefsDataStore.currentUserId.firstOrNull()
+                syncManager.refreshFromCloud(city, uid)
+            }
+        }
+    }
 
     val uiState: StateFlow<BloodDonorUiState> = combine(
         bloodGroupFlow,

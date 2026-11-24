@@ -3,12 +3,15 @@ package com.example.helpnearby.feature.lostfound
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.helpnearby.core.common.AppResult
+import com.example.helpnearby.core.sync.SyncManager
+import com.example.helpnearby.data.local.PreferencesDataStore
 import com.example.helpnearby.domain.model.*
 import com.example.helpnearby.domain.repository.AuthRepository
 import com.example.helpnearby.domain.repository.LostFoundRepository
 import com.example.helpnearby.domain.repository.SafetyModerationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -30,7 +33,9 @@ data class LostFoundUiState(
 class LostFoundViewModel @Inject constructor(
     private val lostFoundRepository: LostFoundRepository,
     private val authRepository: AuthRepository,
-    private val safetyRepository: SafetyModerationRepository
+    private val safetyRepository: SafetyModerationRepository,
+    private val prefsDataStore: PreferencesDataStore,
+    private val syncManager: SyncManager
 ) : ViewModel() {
 
     private val typeFlow = MutableStateFlow(LostFoundType.LOST)
@@ -39,6 +44,22 @@ class LostFoundViewModel @Inject constructor(
     private val inspectedPostIdFlow = MutableStateFlow<String?>(null)
     private val feedbackFlow = MutableStateFlow<Pair<String?, String?>>(null to null)
     private val createdFlow = MutableStateFlow(false)
+
+    init {
+        viewModelScope.launch {
+            val city = prefsDataStore.selectedCity.firstOrNull()
+            val uid = prefsDataStore.currentUserId.firstOrNull()
+            syncManager.refreshFromCloud(city, uid)
+        }
+        viewModelScope.launch {
+            while (true) {
+                delay(10_000L)
+                val city = prefsDataStore.selectedCity.firstOrNull()
+                val uid = prefsDataStore.currentUserId.firstOrNull()
+                syncManager.refreshFromCloud(city, uid)
+            }
+        }
+    }
 
     val uiState: StateFlow<LostFoundUiState> = combine(
         typeFlow,

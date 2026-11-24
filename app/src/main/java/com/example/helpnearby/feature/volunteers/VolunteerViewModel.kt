@@ -3,6 +3,8 @@ package com.example.helpnearby.feature.volunteers
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.helpnearby.core.common.AppResult
+import com.example.helpnearby.core.sync.SyncManager
+import com.example.helpnearby.data.local.PreferencesDataStore
 import com.example.helpnearby.domain.model.User
 import com.example.helpnearby.domain.model.VerificationStatus
 import com.example.helpnearby.domain.model.VolunteerProfile
@@ -10,6 +12,7 @@ import com.example.helpnearby.domain.repository.AuthRepository
 import com.example.helpnearby.domain.repository.VolunteerRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -29,13 +32,31 @@ data class VolunteerUiState(
 @HiltViewModel
 class VolunteerViewModel @Inject constructor(
     private val volunteerRepository: VolunteerRepository,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val prefsDataStore: PreferencesDataStore,
+    private val syncManager: SyncManager
 ) : ViewModel() {
 
     private val queryFlow = MutableStateFlow("")
     private val cityFlow = MutableStateFlow<String?>(null)
     private val selectedIdFlow = MutableStateFlow<String?>(null)
     private val feedbackFlow = MutableStateFlow<Pair<String?, String?>>(null to null)
+
+    init {
+        viewModelScope.launch {
+            val city = prefsDataStore.selectedCity.firstOrNull()
+            val uid = prefsDataStore.currentUserId.firstOrNull()
+            syncManager.refreshFromCloud(city, uid)
+        }
+        viewModelScope.launch {
+            while (true) {
+                delay(10_000L)
+                val city = prefsDataStore.selectedCity.firstOrNull()
+                val uid = prefsDataStore.currentUserId.firstOrNull()
+                syncManager.refreshFromCloud(city, uid)
+            }
+        }
+    }
 
     val uiState: StateFlow<VolunteerUiState> = combine(
         queryFlow,
