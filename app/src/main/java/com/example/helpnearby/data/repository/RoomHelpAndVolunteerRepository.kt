@@ -25,8 +25,26 @@ class RoomHelpRequestRepository @Inject constructor(
     private val helpOfferDao: HelpOfferDao,
     private val securityGuard: SecurityGuard,
     private val syncManager: SyncManager,
-    private val backendConfig: BackendConfig
+    private val backendConfig: BackendConfig,
+    private val notificationRepository: NotificationRepository?,
+    private val volunteerDao: VolunteerDao?
 ) : HelpRequestRepository {
+
+    constructor(
+        helpRequestDao: HelpRequestDao,
+        helpOfferDao: HelpOfferDao,
+        securityGuard: SecurityGuard,
+        syncManager: SyncManager,
+        backendConfig: BackendConfig
+    ) : this(
+        helpRequestDao,
+        helpOfferDao,
+        securityGuard,
+        syncManager,
+        backendConfig,
+        null,
+        null
+    )
 
     override fun observeRequests(
         cityFilter: String?,
@@ -91,6 +109,37 @@ class RoomHelpRequestRepository @Inject constructor(
             payloadJson = """{"id":"${toSave.id}"}""",
             version = toSave.version
         )
+
+        // Notify nearest matching volunteers in the same city or matching category/skills
+        val notifRepo = notificationRepository
+        val volDao = volunteerDao
+        if (notifRepo != null && volDao != null) {
+            runCatching {
+                val availableVolunteers = volDao.getAllAvailableVolunteers()
+                val targetVolunteers = availableVolunteers.filter { vol ->
+                    vol.userId != toSave.ownerId && (
+                        vol.city.equals(toSave.city, ignoreCase = true) ||
+                        vol.skillsCsv.contains(toSave.category.name, ignoreCase = true) ||
+                        vol.skillsCsv.contains(toSave.title, ignoreCase = true) ||
+                        vol.bio.contains(toSave.category.name, ignoreCase = true)
+                    )
+                }
+                targetVolunteers.forEach { vol ->
+                    notifRepo.addNotification(
+                        AppNotification(
+                            id = UUID.randomUUID().toString(),
+                            userId = vol.userId,
+                            type = NotificationType.NEARBY_HELP_REQUEST,
+                            title = "Naye Help Request Nearby: ${toSave.title}",
+                            body = "${toSave.category.labelEn} request in ${toSave.city} (${toSave.approximateArea}). Tap to view & connect via message!",
+                            relatedId = toSave.id,
+                            createdAt = now
+                        )
+                    )
+                }
+            }
+        }
+
         return AppResult.Success(toSave)
     }
 

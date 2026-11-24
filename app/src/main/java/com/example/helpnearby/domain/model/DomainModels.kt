@@ -93,7 +93,8 @@ enum class NotificationType {
     REQUEST_STATUS_CHANGED,
     COMMUNITY_UPDATE,
     DONOR_CONTACT_REQUEST,
-    LOST_ITEM_CLAIM_REQUEST
+    LOST_ITEM_CLAIM_REQUEST,
+    NEARBY_HELP_REQUEST
 }
 
 enum class ReportTargetType {

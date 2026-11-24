@@ -134,6 +134,9 @@ interface VolunteerDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAllIgnore(profiles: List<VolunteerProfileEntity>)
 
+    @Query("SELECT * FROM volunteer_profiles WHERE availability = 1")
+    suspend fun getAllAvailableVolunteers(): List<VolunteerProfileEntity>
+
     @Query("UPDATE volunteer_profiles SET availability = :available WHERE user_id = :userId")
     suspend fun updateAvailability(userId: String, available: Boolean)
 

@@ -483,7 +483,12 @@ fun HelpNearbyRootApp(
                                 onBack = { navController.popBackStack() },
                                 onRequireAuth = { openAuthScreen() }
                             ) {
-                                NotificationsScreen(onBack = { navController.popBackStack() })
+                                NotificationsScreen(
+                                    onBack = { navController.popBackStack() },
+                                    onNavigateToRequest = { reqId ->
+                                        navController.navigate(HelpNearbyRoute.RequestDetail(reqId))
+                                    }
+                                )
                             }
                         }
 

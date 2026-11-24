@@ -12,11 +12,8 @@ import com.example.helpnearby.domain.model.BackendProvider
 import com.example.helpnearby.domain.model.SyncStatus
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -39,7 +36,6 @@ class SyncManager @Inject constructor(
 
     val isOnline: StateFlow<Boolean> = networkMonitor.isOnline
     val pendingCount: Flow<Int> = syncQueueDao.observePendingCount()
-    private val syncScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     suspend fun enqueueOperation(
         entityType: String,
@@ -70,11 +66,6 @@ class SyncManager @Inject constructor(
             )
         )
         scheduleOneTimeSync()
-        if (!backendConfig.isOfflineLocalOnly && isOnline.value) {
-            syncScope.launch {
-                runCatching { processPendingQueueOnce() }
-            }
-        }
         return operationId
     }
 

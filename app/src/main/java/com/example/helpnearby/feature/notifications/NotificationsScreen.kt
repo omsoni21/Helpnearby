@@ -60,6 +60,7 @@ class NotificationsViewModel @Inject constructor(
 @Composable
 fun NotificationsScreen(
     onBack: () -> Unit,
+    onNavigateToRequest: (String) -> Unit = {},
     viewModel: NotificationsViewModel = hiltViewModel()
 ) {
     val items by viewModel.notifications.collectAsStateWithLifecycle()
@@ -105,7 +106,12 @@ fun NotificationsScreen(
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { viewModel.markRead(notif.id) },
+                            .clickable {
+                                viewModel.markRead(notif.id)
+                                if (!notif.relatedId.isNullOrBlank()) {
+                                    onNavigateToRequest(notif.relatedId)
+                                }
+                            },
                         shape = RoundedCornerShape(14.dp),
                         colors = CardDefaults.cardColors(
                             containerColor = if (unread) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)

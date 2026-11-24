@@ -183,7 +183,7 @@ class HelpNearbyUiJourneyTest {
             val authRepo = RoomAuthRepository(db, db.userDao(), db.volunteerDao(), prefs, securityGuard, config)
             val userRepo = RoomUserRepository(db.userDao(), prefs)
 
-            val convVm = ConversationsViewModel(msgRepo, authRepo)
+            val convVm = ConversationsViewModel(msgRepo, syncManager, authRepo)
             val settingsVm = SettingsViewModel(authRepo, userRepo, config, prefs)
             var msgSignInClicked = false
             var settingsSignInClicked = false

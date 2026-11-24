@@ -82,7 +82,9 @@ class HelpNearbyCoreLogicTest {
             db.helpOfferDao(),
             securityGuard,
             syncManager,
-            backendConfig
+            backendConfig,
+            notificationRepo,
+            db.volunteerDao()
         )
         volunteerRepo = RoomVolunteerRepository(
             db.volunteerDao(),
@@ -334,5 +336,50 @@ class HelpNearbyCoreLogicTest {
                 remoteUpdatedAt = 6000L
             )
         )
+    }
+
+    @Test
+    fun `creating help request notifies nearest matching volunteers`() = runTest {
+        val now = System.currentTimeMillis()
+        val regRes = authRepo.registerWithEmail(
+            fullName = "Aarav Sharma",
+            email = "aarav@example.com",
+            password = "StrongPassword1",
+            city = "Bengaluru",
+            state = "Karnataka",
+            country = "India",
+            language = AppLanguage.EN,
+            interests = listOf("Medical Assistance", "Elderly Support"),
+            volunteerAvailable = true
+        )
+        assertTrue(regRes is AppResult.Success)
+        val volUser = (regRes as AppResult.Success).data
+
+        val reqRes = helpRequestRepo.createRequest(
+            HelpRequest(
+                id = "req_notif_test",
+                ownerId = "owner_user",
+                ownerName = "Pooja",
+                title = "Need Medical Assistance",
+                description = "Medicine pickup in Indiranagar",
+                category = HelpCategory.MEDICAL_ASSISTANCE,
+                urgency = UrgencyLevel.HIGH,
+                city = "Bengaluru",
+                state = "Karnataka",
+                approximateArea = "Indiranagar",
+                status = RequestStatus.OPEN,
+                createdAt = now,
+                updatedAt = now,
+                expiresAt = now + 86_400_000L
+            )
+        )
+
+        assertTrue(reqRes is AppResult.Success)
+        val notifications = notificationRepo.observeNotifications(volUser.id).first()
+        assertEquals(1, notifications.size)
+        val notif = notifications.first()
+        assertEquals(NotificationType.NEARBY_HELP_REQUEST, notif.type)
+        assertTrue(notif.title.contains("Naye Help Request Nearby"))
+        assertEquals("req_notif_test", notif.relatedId)
     }
 }
